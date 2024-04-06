@@ -29,8 +29,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     RegisterClass(&wc);
 
-    // 创建窗体
-    HWND hwnd = CreateWindow(
+    //// 创建窗体
+    //HWND hwnd = CreateWindow(
+    //    wc.lpszClassName,
+    //    _T("Time Display / 时间显示窗体"),
+    //    WS_OVERLAPPEDWINDOW,
+    //    CW_USEDEFAULT, CW_USEDEFAULT, 300, 150,
+    //    NULL,
+    //    NULL,
+    //    hInstance,
+    //    NULL
+    //);
+    HWND hwnd = CreateWindowEx(
+        WS_EX_ACCEPTFILES,  // 设置窗口接受鼠标事件的样式
         wc.lpszClassName,
         _T("Time Display / 时间显示窗体"),
         WS_OVERLAPPEDWINDOW,
@@ -144,7 +155,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         SetBkColor(hdcStatic, bgColor); // 设置背景颜色
         return (INT_PTR)hBrush; // 返回画刷句柄作为背景
     }
-
+    
     case WM_ERASEBKGND:
         // 擦除背景时填充窗口背景色
         return 1;
@@ -163,6 +174,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         }
         break;
+    case WM_LBUTTONDOWN:
+        // 鼠标左键单击事件处理
+        OutputDebugString(_T("Left button down\n"));
+        break;
+
+    case WM_RBUTTONDBLCLK:
+        // 右键双击窗体内容时，切换标题栏显示状态
+        if (GetMenu(hwnd) != NULL) {
+            // 如果当前有菜单栏，则隐藏菜单栏和标题栏
+            ShowMenu(hwnd, FALSE);
+            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION);
+            SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+        }
+        else {
+            // 如果当前没有菜单栏，则显示菜单栏和标题栏
+            ShowMenu(hwnd, TRUE);
+            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_CAPTION);
+            SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+        }
+        break;
+
 
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
