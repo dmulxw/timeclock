@@ -1,4 +1,8 @@
-﻿#include <Windows.h>
+﻿////时钟显示
+//  厉小伟
+//  267199@qq.com
+////
+#include <Windows.h>
 #include <tchar.h>
 #include <CommCtrl.h>
 #include <Windowsx.h>
@@ -168,7 +172,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int yPos = (rcClient.bottom - rcClient.top) / 2;
 
             // 提示用户是否确认退出
-            if (MessageBox(hwnd, _T("确定要退出吗？"), _T("退出确认"), MB_ICONQUESTION | MB_YESNO | MB_APPLMODAL | MB_SETFOREGROUND) == IDYES) {
+            if (MessageBox(hwnd, _T("确定要退出吗？EXIT?"), _T("Confirm Exit退出确认"), MB_ICONQUESTION | MB_YESNO | MB_APPLMODAL | MB_SETFOREGROUND) == IDYES) {
                 // 用户确认退出，发送退出消息
                 PostQuitMessage(0);
             }
