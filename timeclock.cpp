@@ -102,6 +102,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     static int cxClient, cyClient;
+    static POINT offset;
+    static BOOL isDragging = FALSE;
 
     switch (uMsg) {
     case WM_CREATE:
@@ -174,27 +176,44 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
         }
         break;
-    case WM_LBUTTONDOWN:
-        // 鼠标左键单击事件处理
-        OutputDebugString(_T("Left button down\n"));
+  
+    case WM_LBUTTONDOWN: 
+        {
+            POINTS pt = MAKEPOINTS(lParam);
+            offset.x = pt.x; // 使用鼠标位置的x坐标
+            offset.y = pt.y; // 使用鼠标位置的y坐标
+            isDragging = TRUE;
+            SetCapture(hwnd);
+        }
+     
+     break;
+
+    case WM_MOUSEMOVE:
+        if (isDragging) {
+            // 计算鼠标的相对位移
+            POINTS pt = MAKEPOINTS(lParam);
+            int dx = pt.x - offset.x; // 使用鼠标位置与偏移量的差值
+            int dy = pt.y - offset.y; // 使用鼠标位置与偏移量的差值
+
+            // 移动窗口
+            RECT rc;
+            GetWindowRect(hwnd, &rc);
+            int newX = rc.left + dx;
+            int newY = rc.top + dy;
+            newX = max(newX, 0); // 限制窗口移动到屏幕边界以内
+            newY = max(newY, 0); // 限制窗口移动到屏幕边界以内
+            newX = min(newX, GetSystemMetrics(SM_CXSCREEN) - (rc.right - rc.left)); // 限制窗口移动到屏幕边界以内
+            newY = min(newY, GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)); // 限制窗口移动到屏幕边界以内
+            SetWindowPos(hwnd, NULL, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        }
         break;
 
-    case WM_RBUTTONDBLCLK:
-        // 右键双击窗体内容时，切换标题栏显示状态
-        if (GetMenu(hwnd) != NULL) {
-            // 如果当前有菜单栏，则隐藏菜单栏和标题栏
-            ShowMenu(hwnd, FALSE);
-            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION);
-            SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-        }
-        else {
-            // 如果当前没有菜单栏，则显示菜单栏和标题栏
-            ShowMenu(hwnd, TRUE);
-            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_CAPTION);
-            SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-        }
+    case WM_LBUTTONUP:
+        isDragging = FALSE;
+        ReleaseCapture();
         break;
 
+   
 
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
